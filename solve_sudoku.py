@@ -26,10 +26,9 @@ def main(argv):
                                                     zero_coordinate_positions,
                                                     flat_panda)
 
-    print missing_values == correct
-
     solutions_in_rows_form = decompose_into_rows_from_list(solutions)
     write_to_solved_board_to_csv(solutions_in_rows_form, 'solved_puzzle.csv')
+
 
 if __name__ == "__main__":
     main(sys.argv[1])

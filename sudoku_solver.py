@@ -1,6 +1,7 @@
 import csv
 import pandas as pd
 import pickle
+import copy
 
 
 def flatten_panda_frame(panda_frame):
@@ -129,9 +130,6 @@ def get_potential_block_values(panda_frame):
             potential_block_values.append(list(candidates))
 
     return potential_block_values, zero_coordinate_positions
-
-
-import copy
 
 
 def permu(list_values, path=list()):
