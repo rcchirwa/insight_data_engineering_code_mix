@@ -2,7 +2,7 @@
 
 ####*Mashed Up in Python*
 
-A Sudoku Puzzle Solver mixed in Python. The goal of the project is to produce a board with a correct solution as long as the given board is valid. 
+A Sudoku Puzzle Solver mixed in Python 2.7.8. The goal of the project is to produce a board with a correct solution as long as the given board is valid. 
 
 ####Running the Puzzle Solver:
 
@@ -21,7 +21,7 @@ The correct board is output to the file called solved_puzzle.csv. This file is o
 ####Working with the Unit Tests:
 
 
-Unit Tests have been added for potential regression testing purposes. 
+Unit Tests have been added for potential regression testing purposes. The only non-standard library that might be required for to run the tests is the mock library used to mock during unit testing.
 
 The tests can be run from the command lines as follows: 
 

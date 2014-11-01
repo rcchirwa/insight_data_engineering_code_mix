@@ -3,6 +3,7 @@ import unittest
 import pandas as pd
 import pickle
 import os
+from mock import patch, mock_open
 
 
 class MyTest(unittest.TestCase):
@@ -23,9 +24,20 @@ class MyTest(unittest.TestCase):
         self.assertEqual(len(flat_data), 81)
         self.assertEqual(flat_data, test_data)
 
-    def test_decompose_into_blocks_from_panda(self):
-        block_data = solver.decompose_into_blocks_from_panda(self.panda_board)
+    @patch('sudoku_solver.decompose_into_blocks_from_list')
+    @patch('sudoku_solver.flatten_panda_frame')
+    def test_decompose_into_blocks_from_panda(self,
+                                              mock1,
+                                              decompose_mock):
+        mock1.return_value = self.flat_board
+
         test_data = self.get_data_from_dat("board_as_3x3_blocks.dat")
+        decompose_mock.return_value = test_data
+
+        block_data = solver.decompose_into_blocks_from_panda(self.panda_board)
+
+        mock1.assert_called_once_with(self.panda_board)
+        decompose_mock.assert_called_once_with(self.flat_board)
         self.assertEqual(block_data, test_data)
 
     def test_decompose_into_rows_from_panda(self):
@@ -54,22 +66,49 @@ class MyTest(unittest.TestCase):
         test_data = self.get_data_from_dat("board_as_columns.dat")
         self.assertEqual(column_data, test_data)
 
-    def test_get_grid_decomposiion_from_panda(self):
+    @patch('sudoku_solver.decompose_into_blocks_from_panda')
+    @patch('sudoku_solver.decompose_into_columns_from_panda')
+    @patch('sudoku_solver.decompose_into_rows_from_panda')
+    def test_get_grid_decomposiion_from_panda(self,
+                                              mock_from_rows,
+                                              mock_from_columns,
+                                              mock_from_blocks):
         test_sectors = self.get_data_from_dat("board_as_3x3_blocks.dat")
         test_columns = self.get_data_from_dat("board_as_columns.dat")
         test_rows = self.get_data_from_dat("board_as_rows.dat")
+
+        mock_from_blocks.return_value = test_sectors
+        mock_from_columns.return_value = test_columns
+        mock_from_rows.return_value = test_rows
+
         sectors, columns, rows = solver.get_grid_decomposiion_from_panda(
             self.panda_board)
+
         self.assertEqual(sectors, test_sectors)
         self.assertEqual(columns, test_columns)
         self.assertEqual(rows, test_rows)
 
-    def test_get_grid_decomposiion_from_list(self):
+    @patch('sudoku_solver.decompose_into_blocks_from_list')
+    @patch('sudoku_solver.decompose_into_columns_from_list')
+    @patch('sudoku_solver.decompose_into_rows_from_list')
+    def test_get_grid_decomposiion_from_list(self,
+                                             mock_from_rows,
+                                             mock_from_columns,
+                                             mock_from_blocks):
         test_sectors = self.get_data_from_dat("board_as_3x3_blocks.dat")
         test_columns = self.get_data_from_dat("board_as_columns.dat")
         test_rows = self.get_data_from_dat("board_as_rows.dat")
+
+        mock_from_blocks.return_value = test_sectors
+        mock_from_columns.return_value = test_columns
+        mock_from_rows.return_value = test_rows
+
         sectors, columns, rows = \
             solver.get_grid_decomposiion_from_list(self.flat_board)
+
+        self.assertEqual(sectors, test_sectors)
+        self.assertEqual(columns, test_columns)
+        self.assertEqual(rows, test_rows)
 
     def test_get_potential_block_values(self):
         data_file = "potential_space_values.dat"
@@ -165,6 +204,12 @@ class MyTest(unittest.TestCase):
         self.assertEqual(short_alias(48), (3, 5, 1, 1, 4))
         self.assertEqual(short_alias(55), (1, 6, 2, 0, 6))
         self.assertEqual(short_alias(61), (7, 6, 2, 2, 8))
+
+    @patch('csv.writer')
+    def test_wrtie_to_solved_board_to_csv(self, mocked_out):
+        solver.write_to_solved_board_to_csv([1, 2, 3], 'filename.dat')
+        mocked_out.assert_called_once()
+        mocked_out.return_value.writerows.assert_called_once_with([1, 2, 3])
 
 if __name__ == '__main__':
     unittest.main()

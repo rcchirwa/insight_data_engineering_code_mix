@@ -90,7 +90,6 @@ def get_grid_decomposiion_from_list(list_in):
     return sectors, columns, rows
 
 
-# TO do write test
 def get_positional_values_from_index(index):
     column = index % 9
     row = index/9
@@ -132,6 +131,8 @@ def get_potential_block_values(panda_frame):
     return potential_block_values, zero_coordinate_positions
 
 
+# TO-DO: permu should be generator so it could
+# genearate and check so break after first solution is found
 def permu(list_values, path=list()):
     combos = []
     start_index = 0
