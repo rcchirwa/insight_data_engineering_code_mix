@@ -1,8 +1,8 @@
 from sudoku_solver import *
 
 import csv
-import pandas as pd
 import pickle
+import os.path
 
 row_form_board = get_board_as_rows('unsolved_puzzle.csv')
 
@@ -13,23 +13,21 @@ flat_solution_board = flatten_extracted_rows(row_form_board)
 
 potential_block_values, zero_coordinate_positions = \
     get_potential_block_values(flat_solution_board)
+
 values = permu(potential_block_values, [])
-
-correct = [1, 7, 9, 6, 5, 5, 1, 2, 6, 5, 5, 9, 7,
-           6, 1, 6, 1, 8, 2, 3, 8, 6, 7, 1, 4, 3]
-
 
 solution, final_matrix = check_for_solutions(values,
                                              zero_coordinate_positions,
                                              flat_solution_board)
-
-import os.path
 
 
 def stash_data(PIK, data):
     file_path = os.path.join('unitest_data', PIK)
     with open(file_path, "w+") as f:
         pickle.dump(data, f)
+
+
+print "Strarting to Generate test data"
 
 PIK = "board_as_series.dat"
 data = flatten_extracted_rows(row_form_board)
@@ -67,4 +65,4 @@ PIK = "flat_solution_board.dat"
 data = final_matrix
 stash_data(PIK, data)
 
-print solution == correct
+print "Finished Generating Test Data"
