@@ -23,22 +23,32 @@ def main(argv):
     potential_block_values, zero_coordinate_positions = \
         get_potential_block_values(flat_panda)
 
-    # TO DO permu should be generator so it could
-    # genearate and check so break after first solution is found
-    print "generate all potential combination of solutions........"
-    values = permu(potential_block_values, [])
+    if [] in potential_block_values:
+        print "INVALID PUZZLE provided"
+        print "A blank block that has no valid solution has been identified "
+        print "Exiting Program"
 
-    print "Search all possible solutions for correct one"
-    missing_values, solutions = check_for_solutions(values,
-                                                    zero_coordinate_positions,
-                                                    flat_panda)
+    else:
 
-    print "Convert the soltion back into rows"
-    solutions_in_rows_form = decompose_into_rows_from_list(solutions)
+        # TO DO permu should be generator so it could
+        # genearate and check so break after first solution is found
+        print "generate all potential combination of solutions........"
+        values = permu(potential_block_values, [])
 
-    print "Outputing solution to 'solved_puzzle.csv'"
-    write_to_solved_board_to_csv(solutions_in_rows_form, 'solved_puzzle.csv')
+        print "Search all possible solutions for correct one"
+        missing_values, solutions = \
+            check_for_solutions(values, zero_coordinate_positions,
+                                flat_panda)
 
-    print "Solved: Enjoy reviewing your Solution"
+        print "Convert the soltion back into rows"
+        solutions_in_rows_form = decompose_into_rows_from_list(solutions)
+
+        print "Outputing solution to 'solved_puzzle.csv'"
+        write_to_solved_board_to_csv(solutions_in_rows_form,
+                                     'solved_puzzle.csv')
+
+        print "Solved: Enjoy reviewing your Solution"
+
+
 if __name__ == "__main__":
     main(sys.argv[1])
