@@ -1,19 +1,34 @@
 import csv
-import pandas as pd
 import pickle
 import copy
 
 
-def flatten_panda_frame(panda_frame):
+def get_board_as_rows(file_name):
+    board_as_rows = []
+    with open(file_name) as csv_file:
+        csvreader = csv.reader(csv_file)
+        for row in csvreader:
+            row = map(lambda x: int(x), row)
+            board_as_rows.append(row)
+    return board_as_rows
+
+
+def write_to_solved_board_to_csv(solution, file_name):
+    with open(file_name, 'w') as fp:
+        a = csv.writer(fp, delimiter=',')
+        a.writerows(solution)
+
+
+def flatten_extracted_rows(rows):
     linear_repr = []
-    for x in range(len(panda_frame)):
-        linear_repr = linear_repr + list(panda_frame.iloc[x].values)
+    for row in rows:
+        linear_repr = linear_repr + row
     return linear_repr
 
 
-def decompose_into_blocks_from_panda(panda_frame):
+def decompose_into_blocks_from_rows(board_as_rows):
     flattened_frame = []
-    flattened_frame = flatten_panda_frame(panda_frame)
+    flattened_frame = flatten_extracted_rows(board_as_rows)
     decomposed = decompose_into_blocks_from_list(flattened_frame)
     return decomposed
 
@@ -43,13 +58,6 @@ def decompose_into_blocks_from_list(list_1D):
     return decomposed_blocks
 
 
-def decompose_into_rows_from_panda(panda_frame):
-    rows = []
-    for x in range(len(panda_frame)):
-        rows.append(list(panda_frame.iloc[x].values))
-    return rows
-
-
 def decompose_into_rows_from_list(list_in):
     rows = []
     for x in range(9):
@@ -58,10 +66,10 @@ def decompose_into_rows_from_list(list_in):
     return rows
 
 
-def decompose_into_columns_from_panda(panda_frame):
+def decompose_into_columns_from_rows(rows):
     columns = []
-    for x in range(len(panda_frame)):
-        columns.append(list((panda_frame[x].values)))
+    flat_board = flatten_extracted_rows(rows)
+    columns = decompose_into_columns_from_list(flat_board)
     return columns
 
 
@@ -76,10 +84,9 @@ def decompose_into_columns_from_list(list_in):
     return rows
 
 
-def get_grid_decomposiion_from_panda(panda_frame):
-    sectors = decompose_into_blocks_from_panda(panda_frame)
-    columns = decompose_into_columns_from_panda(panda_frame)
-    rows = decompose_into_rows_from_panda(panda_frame)
+def get_grid_decomposiion_from_rows(rows):
+    sectors = decompose_into_blocks_from_rows(rows)
+    columns = decompose_into_columns_from_rows(rows)
     return sectors, columns, rows
 
 
@@ -100,17 +107,16 @@ def get_positional_values_from_index(index):
     return column, row, sector_row, sector_column, sector_postion
 
 
-def get_potential_block_values(panda_frame):
+def get_potential_block_values(flat_board):
 
-    sectors, columns, rows = get_grid_decomposiion_from_panda(panda_frame)
+    sectors, columns, rows = get_grid_decomposiion_from_list(flat_board)
 
-    flat_panda = flatten_panda_frame(panda_frame)
     STATIC_SET = set(range(1, 10))
 
     potential_block_values = []
     zero_coordinate_positions = []
 
-    for i, val in enumerate(flat_panda):
+    for i, val in enumerate(flat_board):
         if val == 0:
             column, row, sector_row, sector_column, sector_postion = \
                 get_positional_values_from_index(i)
@@ -160,24 +166,18 @@ def check_for_valid_combos(combos):
 
 
 def check_for_solutions(potential_solutions,
-                        zero_coordinate_positions, flat_panda):
+                        zero_coordinate_positions, flat_board):
     for i, solution in enumerate(potential_solutions):
         for index, position in enumerate(zero_coordinate_positions):
-            flat_panda[position] = solution[index]
+            flat_board[position] = solution[index]
 
-        sectors_popultaed = decompose_into_blocks_from_list(flat_panda)
-        columns_populated = decompose_into_columns_from_list(flat_panda)
-        rows_populated = decompose_into_rows_from_list(flat_panda)
+        sectors_popultaed = decompose_into_blocks_from_list(flat_board)
+        columns_populated = decompose_into_columns_from_list(flat_board)
+        rows_populated = decompose_into_rows_from_list(flat_board)
 
         if not (check_for_valid_combos(sectors_popultaed) or
                 check_for_valid_combos(rows_populated) or
                 check_for_valid_combos(columns_populated)):
             continue
 
-        return solution, flat_panda
-
-
-def write_to_solved_board_to_csv(solution, file_name):
-    with open(file_name, 'w') as fp:
-        a = csv.writer(fp, delimiter=',')
-        a.writerows(solution)
+        return solution, flat_board

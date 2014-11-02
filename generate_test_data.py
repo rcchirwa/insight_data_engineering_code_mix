@@ -4,22 +4,24 @@ import csv
 import pandas as pd
 import pickle
 
-panda_frame = pd.read_csv('unsolved_puzzle.csv', header=None)
+row_form_board = get_board_as_rows('unsolved_puzzle.csv')
 
-sectors, columns, rows = get_grid_decomposiion_from_panda(panda_frame)
+sectors, columns, rows = get_grid_decomposiion_from_rows(
+    row_form_board)
+
+flat_solution_board = flatten_extracted_rows(row_form_board)
 
 potential_block_values, zero_coordinate_positions = \
-    get_potential_block_values(panda_frame)
+    get_potential_block_values(flat_solution_board)
 values = permu(potential_block_values, [])
 
 correct = [1, 7, 9, 6, 5, 5, 1, 2, 6, 5, 5, 9, 7,
            6, 1, 6, 1, 8, 2, 3, 8, 6, 7, 1, 4, 3]
 
-flat_panda = flatten_panda_frame(panda_frame)
 
 solution, final_matrix = check_for_solutions(values,
                                              zero_coordinate_positions,
-                                             flat_panda)
+                                             flat_solution_board)
 
 import os.path
 
@@ -30,7 +32,7 @@ def stash_data(PIK, data):
         pickle.dump(data, f)
 
 PIK = "board_as_series.dat"
-data = flatten_panda_frame(panda_frame)
+data = flatten_extracted_rows(row_form_board)
 stash_data(PIK, data)
 
 PIK = "board_as_3x3_blocks.dat"

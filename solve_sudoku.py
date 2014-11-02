@@ -10,12 +10,16 @@ import pandas as pd
 
 
 def main(argv):
-    panda_frame = pd.read_csv(argv, header=None)
 
-    sectors, columns, rows = get_grid_decomposiion_from_panda(panda_frame)
+    row_form_board = get_board_as_rows(argv)
+
+    sectors, columns, rows = get_grid_decomposiion_from_rows(
+        row_form_board)
+
+    flat_panda = flatten_extracted_rows(row_form_board)
 
     potential_block_values, zero_coordinate_positions = \
-        get_potential_block_values(panda_frame)
+        get_potential_block_values(flat_panda)
 
     # TO DO permu should be generator so it could
     # genearate and check so break after first solution is found
@@ -23,8 +27,6 @@ def main(argv):
 
     correct = [1, 7, 9, 6, 5, 5, 1, 2, 6, 5, 5, 9, 7, 6, 1, 6,
                1, 8, 2, 3, 8, 6, 7, 1, 4, 3]
-
-    flat_panda = flatten_panda_frame(panda_frame)
 
     missing_values, solutions = check_for_solutions(values,
                                                     zero_coordinate_positions,

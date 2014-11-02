@@ -6,8 +6,6 @@ A Sudoku Puzzle Solver mixed in Python 2.7.8. The goal of the project is to prod
 
 ####Running the Puzzle Solver:
 
-The only non-standard python library that is needed to run this program is the popular pandas library utilized for data analysis.
-
 The program can be executed as follows using the sample file, unsolved_puzzle.csv, contained in the repository:
 
 `$ python solve_sudoku.py unsolved_puzzle.csv`

@@ -1,14 +1,13 @@
 import sudoku_solver as solver
 import unittest
-import pandas as pd
 import pickle
 import os
-from mock import patch, mock_open
+from mock import patch, mock_open, MagicMock
 
 
 class MyTest(unittest.TestCase):
     def setUp(self):
-        self.panda_board = pd.read_csv('unsolved_puzzle.csv', header=None)
+        self.row_form_board = self.get_data_from_dat("board_as_rows.dat")
         self.flat_board = self.get_data_from_dat("board_as_series.dat")
 
     def get_data_from_dat(self, file_name):
@@ -17,37 +16,63 @@ class MyTest(unittest.TestCase):
             data = pickle.load(f)
         return data
 
-    def test_flatten_panda_frame(self):
-        flat_data = solver.flatten_panda_frame(self.panda_board)
+    @patch('csv.reader')
+    def test_get_board_as_rows(self, mocked_out):
+        with patch('sudoku_solver.open', create=True) as mock_open:
+            mocked_out.return_value = self.row_form_board
+
+            mock_unsolved_puzzle = "mock_unsolved_puzzle.csv"
+            test_rows_extracted = solver.get_board_as_rows(
+                mock_unsolved_puzzle)
+
+            mock_open.assert_called_once_with(mock_unsolved_puzzle)
+
+        mocked_out.assert_called_once(mock_unsolved_puzzle)
+        self.assertEqual(self.row_form_board, test_rows_extracted)
+
+    @patch('csv.writer')
+    def test_wrtie_to_solved_board_to_csv(self, mocked_out):
+        with patch('sudoku_solver.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=file)
+
+            mocked_out.return_value = MagicMock()
+
+            mock_solved_puzzle = "mock_solved_puzzle.csv"
+            solver.write_to_solved_board_to_csv(
+                [[1, 2, 3]], mock_open)
+
+            mock_open.assert_called_once_with(mock_open, 'w')
+
+        mocked_out.assert_called_once()
+        mocked_out.return_value.writerows.assert_called_once_with([[1, 2, 3]])
+
+    def test_flatten_extracted_rows(self):
+        flat_data = solver.flatten_extracted_rows(self.row_form_board)
         test_data = self.get_data_from_dat("board_as_series.dat")
 
         self.assertEqual(len(flat_data), 81)
         self.assertEqual(flat_data, test_data)
 
     @patch('sudoku_solver.decompose_into_blocks_from_list')
-    @patch('sudoku_solver.flatten_panda_frame')
-    def test_decompose_into_blocks_from_panda(self,
-                                              mock1,
-                                              decompose_mock):
+    @patch('sudoku_solver.flatten_extracted_rows')
+    def test_decompose_into_blocks_from_rows(self,
+                                             mock1,
+                                             decompose_mock):
         mock1.return_value = self.flat_board
 
         test_data = self.get_data_from_dat("board_as_3x3_blocks.dat")
         decompose_mock.return_value = test_data
 
-        block_data = solver.decompose_into_blocks_from_panda(self.panda_board)
+        block_data = solver.decompose_into_blocks_from_rows(
+            self.row_form_board)
 
-        mock1.assert_called_once_with(self.panda_board)
+        mock1.assert_called_once_with(self.row_form_board)
         decompose_mock.assert_called_once_with(self.flat_board)
         self.assertEqual(block_data, test_data)
 
-    def test_decompose_into_rows_from_panda(self):
-        row_data = solver.decompose_into_rows_from_panda(self.panda_board)
-        test_data = self.get_data_from_dat("board_as_rows.dat")
-        self.assertEqual(row_data, test_data)
-
-    def test_decompose_into_columns_from_panda(self):
-        column_data = solver.decompose_into_columns_from_panda(
-            self.panda_board)
+    def test_decompose_into_columns_from_rows(self):
+        column_data = solver.decompose_into_columns_from_rows(
+            self.row_form_board)
         test_data = self.get_data_from_dat("board_as_columns.dat")
         self.assertEqual(column_data, test_data)
 
@@ -66,23 +91,20 @@ class MyTest(unittest.TestCase):
         test_data = self.get_data_from_dat("board_as_columns.dat")
         self.assertEqual(column_data, test_data)
 
-    @patch('sudoku_solver.decompose_into_blocks_from_panda')
-    @patch('sudoku_solver.decompose_into_columns_from_panda')
-    @patch('sudoku_solver.decompose_into_rows_from_panda')
-    def test_get_grid_decomposiion_from_panda(self,
-                                              mock_from_rows,
-                                              mock_from_columns,
-                                              mock_from_blocks):
+    @patch('sudoku_solver.decompose_into_blocks_from_rows')
+    @patch('sudoku_solver.decompose_into_columns_from_rows')
+    def test_get_grid_decomposiion_from_rows(self,
+                                             mock_from_columns,
+                                             mock_from_blocks):
         test_sectors = self.get_data_from_dat("board_as_3x3_blocks.dat")
         test_columns = self.get_data_from_dat("board_as_columns.dat")
         test_rows = self.get_data_from_dat("board_as_rows.dat")
 
         mock_from_blocks.return_value = test_sectors
         mock_from_columns.return_value = test_columns
-        mock_from_rows.return_value = test_rows
 
-        sectors, columns, rows = solver.get_grid_decomposiion_from_panda(
-            self.panda_board)
+        sectors, columns, rows = solver.get_grid_decomposiion_from_rows(
+            self.row_form_board)
 
         self.assertEqual(sectors, test_sectors)
         self.assertEqual(columns, test_columns)
@@ -116,7 +138,7 @@ class MyTest(unittest.TestCase):
         data_file = "blank_space_coordinates.dat"
         test_zero_coordinate_position = self.get_data_from_dat(data_file)
         potential_solutions, zero_coordinate_positions = \
-            solver.get_potential_block_values(self.panda_board)
+            solver.get_potential_block_values(self.flat_board)
         self.assertEqual(potential_solutions,
                          test_potential_solutions)
         self.assertEqual(zero_coordinate_positions,
@@ -204,12 +226,6 @@ class MyTest(unittest.TestCase):
         self.assertEqual(short_alias(48), (3, 5, 1, 1, 4))
         self.assertEqual(short_alias(55), (1, 6, 2, 0, 6))
         self.assertEqual(short_alias(61), (7, 6, 2, 2, 8))
-
-    @patch('csv.writer')
-    def test_wrtie_to_solved_board_to_csv(self, mocked_out):
-        solver.write_to_solved_board_to_csv([1, 2, 3], 'filename.dat')
-        mocked_out.assert_called_once()
-        mocked_out.return_value.writerows.assert_called_once_with([1, 2, 3])
 
 if __name__ == '__main__':
     unittest.main()
