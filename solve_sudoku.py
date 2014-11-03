@@ -43,12 +43,19 @@ def main(argv):
         print "Convert the soltion back into rows"
         solutions_in_rows_form = decompose_into_rows_from_list(solutions)
 
-        print "Outputing solution to 'solved_puzzle.csv'"
+        print ""
+        print "Here is the Solved Puzzle:"
+        print""
+        for solution_row in solutions_in_rows_form:
+            stringified_row = ", ".join(map(str, solution_row))
+            print stringified_row
+        print ""
+
+        print "Outputing a copy of solution to 'solved_puzzle.csv'"
         write_to_solved_board_to_csv(solutions_in_rows_form,
                                      'solved_puzzle.csv')
 
         print "Solved: Enjoy reviewing your Solution"
-
 
 if __name__ == "__main__":
     main(sys.argv[1])
