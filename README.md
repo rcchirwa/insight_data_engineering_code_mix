@@ -19,11 +19,11 @@ The correct board is output to the file called solved_puzzle.csv. This file is o
 ####Working with the Unit Tests:
 
 
-Unit Tests have been added for potential regression testing purposes. The only non-standard library that might be required for to run the tests is the mock library used to mock during unit testing.
+Unit Tests have been added for potential regression testing purposes. The only two non-standard libraries that might be required for running the tests are nosetest and the mock library used run the tests and mock out dependencies respectively.
 
-The tests can be run from the command lines as follows: 
+The tests can be run from the command lines will in the root of the projects (the directory above the tests) as follows: 
 
-`$ python tests.py -v`
+`$ nosetests`
 
 The output will tell you if the tests are still valid after potential refactoring or code changes. 
 

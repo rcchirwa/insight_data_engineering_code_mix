@@ -1,4 +1,4 @@
-from sudoku_solver import *
+from sudoku_solver.sudoku_solver import *
 
 import csv
 import pickle
@@ -22,7 +22,7 @@ solution, final_matrix = check_for_solutions(values,
 
 
 def stash_data(PIK, data):
-    file_path = os.path.join('unitest_data', PIK)
+    file_path = os.path.join('tests','unitest_data', PIK)
     with open(file_path, "w+") as f:
         pickle.dump(data, f)
 

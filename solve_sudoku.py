@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from sudoku_solver import *
+from sudoku_solver.sudoku_solver import *
 
 import csv
 import pickle
